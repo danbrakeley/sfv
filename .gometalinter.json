@@ -1,0 +1,9 @@
+{
+  "Enable": [
+    "golint"
+  ],
+  "Exclude": [
+    "\\bexported \\w+ (\\S*['.]*)([a-zA-Z'.*]*) should have comment( \\(or a comment on this block\\))? or be unexported\\b",
+    "\\bcomment on exported \\w+ (\\S*['.]*)([a-zA-Z'.*]*) should be of the form\\b"
+  ]
+}
