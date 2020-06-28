@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -11,10 +12,15 @@ import (
 )
 
 func main() {
-	// var flagJSON = flag.Bool("json", false, "output results as json")
+	var flagJSON = flag.Bool("json", false, "output results as json")
 	flag.Parse()
 
-	log := frog.New(frog.Auto)
+	var log frog.Logger
+	if *flagJSON {
+		log = frog.New(frog.Basic)
+	} else {
+		log = frog.New(frog.Auto)
+	}
 	defer log.Close()
 
 	files := flag.Args()
@@ -37,16 +43,25 @@ func main() {
 	results := sf.Verify(fnProgress)
 	frog.RemoveFixedLine(line)
 
+	if *flagJSON {
+		b, err := json.MarshalIndent(results, "", "  ")
+		if err != nil {
+			log.Fatal("error generating json", frog.Err(err))
+		}
+		fmt.Print(string(b))
+		return
+	}
+
 	hasErrors := false
 	for _, entry := range results.Files {
-		if entry.Err == nil {
+		if len(entry.Err) == 0 {
 			log.Info("OK", frog.String("file", entry.Filename), frog.String("crc", fmt.Sprintf("%08X", entry.ActualCRC32)))
 		} else {
 			log.Error("mismatch!",
 				frog.String("file", entry.Filename),
 				frog.String("expected_crc", fmt.Sprintf("%08X", entry.ExpectedCRC32)),
 				frog.String("actual_crc", fmt.Sprintf("%08X", entry.ActualCRC32)),
-				frog.Err(entry.Err),
+				frog.String("error", entry.Err),
 			)
 			hasErrors = true
 		}

@@ -2,6 +2,7 @@ package sfv
 
 import (
 	"bytes"
+	"encoding/hex"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -30,7 +31,7 @@ func Test_CreateFromFile(t *testing.T) {
 
 			var actual string
 			for i, entry := range sf.Files {
-				actual += fmt.Sprintf("%d %d %s\n", i, entry.CRC32, entry.Filename)
+				actual += fmt.Sprintf("%2d %s %s\n", i, hex.EncodeToString(entry.CRC32), entry.Filename)
 			}
 
 			if *update {
@@ -72,7 +73,7 @@ func Test_Verify(t *testing.T) {
 			// test with a nil progress func
 			results := sf.Verify(nil)
 			for i, entry := range results.Files {
-				actual += fmt.Sprintf("%d %d %d %s %v\n", i, entry.ExpectedCRC32, entry.ActualCRC32, entry.Filename, entry.Err)
+				actual += fmt.Sprintf("%d %s %s %s %v\n", i, entry.ExpectedCRC32, entry.ActualCRC32, entry.Filename, entry.Err)
 			}
 
 			// test with a non-nil progress func
@@ -88,7 +89,7 @@ func Test_Verify(t *testing.T) {
 
 			results = sf.Verify(fnProgress)
 			for i, entry := range results.Files {
-				actual += fmt.Sprintf("%d %d %d %s %v\n", i, entry.ExpectedCRC32, entry.ActualCRC32, entry.Filename, entry.Err)
+				actual += fmt.Sprintf("%d %s %s %s %v\n", i, entry.ExpectedCRC32, entry.ActualCRC32, entry.Filename, entry.Err)
 			}
 
 			if *update {

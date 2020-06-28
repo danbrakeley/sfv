@@ -1,38 +1,38 @@
 package sfv
 
 import (
+	"encoding/hex"
 	"fmt"
 	"hash/crc32"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"unicode/utf8"
 )
 
 type File struct {
-	Filename string      `json:"filename"`
-	Files    []FileEntry `json:"files"`
+	Filename string
+	Files    []FileEntry
 }
 
 type FileEntry struct {
-	Filename string `json:"name"`
-	CRC32    uint32 `json:"crc"`
+	Filename string
+	CRC32    []byte
 }
 
 type VerifyResults struct {
-	RootPath string
-	Files    []ResultsEntry
+	SFVFile string         `json:"sfv"`
+	Files   []ResultsEntry `json:"files"`
 }
 
 type ResultsEntry struct {
-	Filename      string
-	ExpectedCRC32 uint32
-	ActualCRC32   uint32
-	ActualSize    int64
-	Err           error
+	Filename      string `json:"filename"`
+	ExpectedCRC32 string `json:"expected_crc"`
+	ActualCRC32   string `json:"actual_crc,omitempty"`
+	ActualSize    int64  `json:"size,omitempty"`
+	Err           string `json:"error,omitempty"`
 }
 
 func CreateFromFile(filename string) (File, error) {
@@ -67,12 +67,12 @@ func CreateFromFile(filename string) (File, error) {
 		if !utf8.Valid([]byte(rawCRC)) {
 			return File{}, fmt.Errorf("line %d has non-utf8 crc32", i)
 		}
-		parsedCRC, err := strconv.ParseUint(rawCRC, 16, 32)
+		b, err := hex.DecodeString(rawCRC)
 		if err != nil {
 			return File{}, fmt.Errorf("error parsing crc32: %v", err)
 		}
 
-		sf.Files = append(sf.Files, FileEntry{Filename: rawFilename, CRC32: uint32(parsedCRC)})
+		sf.Files = append(sf.Files, FileEntry{Filename: rawFilename, CRC32: b})
 	}
 
 	return sf, nil
@@ -83,19 +83,19 @@ func (sf File) Verify(fnProgress func(curFile string, bytesRead, bytesTotal int6
 	rootPath := filepath.Dir(sf.Filename)
 
 	results := VerifyResults{
-		RootPath: rootPath,
-		Files:    make([]ResultsEntry, len(sf.Files)),
+		SFVFile: filepath.ToSlash(filepath.Clean(sf.Filename)),
+		Files:   make([]ResultsEntry, len(sf.Files)),
 	}
 
 	var bytesTotal int64
 	for i, entry := range sf.Files {
 		results.Files[i].Filename = entry.Filename
-		results.Files[i].ExpectedCRC32 = entry.CRC32
+		results.Files[i].ExpectedCRC32 = hex.EncodeToString(entry.CRC32)
 
 		if fi, err := os.Stat(filepath.Join(rootPath, entry.Filename)); err != nil {
-			results.Files[i].Err = err
+			results.Files[i].Err = err.Error()
 		} else if fi.IsDir() {
-			results.Files[i].Err = fmt.Errorf("name refers to a directory, not a file")
+			results.Files[i].Err = "name refers to a directory, not a file"
 		} else {
 			s := fi.Size()
 			results.Files[i].ActualSize = s
@@ -107,7 +107,7 @@ func (sf File) Verify(fnProgress func(curFile string, bytesRead, bytesTotal int6
 	for i := range results.Files {
 		re := &results.Files[i]
 
-		if re.Err != nil {
+		if len(re.Err) != 0 {
 			continue
 		}
 
@@ -118,13 +118,13 @@ func (sf File) Verify(fnProgress func(curFile string, bytesRead, bytesTotal int6
 		hash, err := GenerateCRC32ForFile(filepath.Join(rootPath, re.Filename))
 		bytesRead += re.ActualSize
 		if err != nil {
-			re.Err = err
+			re.Err = err.Error()
 			continue
 		}
 
-		re.ActualCRC32 = hash
+		re.ActualCRC32 = fmt.Sprintf("%08x", hash)
 		if re.ActualCRC32 != re.ExpectedCRC32 {
-			re.Err = fmt.Errorf("checksum mismatch")
+			re.Err = "checksum mismatch"
 			continue
 		}
 	}
