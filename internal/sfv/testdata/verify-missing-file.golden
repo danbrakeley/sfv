@@ -1,0 +1,8 @@
+0 223554084 223554084 verify-1.bin <nil>
+1 1320333858 1320333858 verify-2.bin <nil>
+2 1320333858 0 verify-3.bin CreateFile testdata\verify-3.bin: The system cannot find the file specified.
+0/28 verify-1.bin
+8/28 verify-2.bin
+0 223554084 223554084 verify-1.bin <nil>
+1 1320333858 1320333858 verify-2.bin <nil>
+2 1320333858 0 verify-3.bin CreateFile testdata\verify-3.bin: The system cannot find the file specified.

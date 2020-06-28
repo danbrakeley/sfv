@@ -1,0 +1,6 @@
+0 223554084 223554084 verify-1.bin <nil>
+1 1337111074 1320333858 verify-2.bin checksum mismatch
+0/28 verify-1.bin
+8/28 verify-2.bin
+0 223554084 223554084 verify-1.bin <nil>
+1 1337111074 1320333858 verify-2.bin checksum mismatch

@@ -1,0 +1,4 @@
+; sfv testdata
+verify-1.bin 0D532A24
+verify-2.bin 4EB2B222
+verify-3.bin 4EB2B222
