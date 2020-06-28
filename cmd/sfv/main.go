@@ -17,9 +17,9 @@ func main() {
 
 	var log frog.Logger
 	if *flagJSON {
-		log = frog.New(frog.Basic)
+		log = frog.New(frog.Basic, frog.HideTimestamps, frog.FieldIndent20)
 	} else {
-		log = frog.New(frog.Auto)
+		log = frog.New(frog.Auto, frog.HideTimestamps, frog.FieldIndent20)
 	}
 	defer log.Close()
 
@@ -55,12 +55,12 @@ func main() {
 	hasErrors := false
 	for _, entry := range results.Files {
 		if len(entry.Err) == 0 {
-			log.Info("OK", frog.String("file", entry.Filename), frog.String("crc", fmt.Sprintf("%08X", entry.ActualCRC32)))
+			log.Info("OK", frog.String("file", entry.Filename), frog.String("crc", entry.ActualCRC32))
 		} else {
 			log.Error("mismatch!",
 				frog.String("file", entry.Filename),
-				frog.String("expected_crc", fmt.Sprintf("%08X", entry.ExpectedCRC32)),
-				frog.String("actual_crc", fmt.Sprintf("%08X", entry.ActualCRC32)),
+				frog.String("expected_crc", entry.ExpectedCRC32),
+				frog.String("actual_crc", entry.ActualCRC32),
 				frog.String("error", entry.Err),
 			)
 			hasErrors = true
