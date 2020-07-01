@@ -71,7 +71,7 @@ func Test_Verify(t *testing.T) {
 			}
 
 			// test with a nil progress func
-			results := sf.Verify(nil)
+			results := sf.Verify()
 			for i, entry := range results.Files {
 				actual += fmt.Sprintf("%d %s %s %s %v\n", i, entry.ExpectedCRC32, entry.ActualCRC32, entry.Filename, entry.Err)
 			}

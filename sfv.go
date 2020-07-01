@@ -82,7 +82,7 @@ func CreateFromFile(filename string) (File, error) {
 }
 
 // Verify will open each file, compute the checksum, then add the results to the returned VerifyResults object.
-func (sf File) Verify(fnProgress func(curFile string, bytesRead, bytesTotal int64)) VerifyResults {
+func (sf File) Verify(fnProgress ...func(curFile string, bytesRead, bytesTotal int64)) VerifyResults {
 	// filenames in the sfv will be relative to the sfv file itself
 	rootPath := filepath.Dir(sf.Filename)
 
@@ -115,8 +115,8 @@ func (sf File) Verify(fnProgress func(curFile string, bytesRead, bytesTotal int6
 			continue
 		}
 
-		if fnProgress != nil {
-			fnProgress(re.Filename, bytesRead, bytesTotal)
+		for _, fn := range fnProgress {
+			fn(re.Filename, bytesRead, bytesTotal)
 		}
 
 		hash, err := GenerateCRC32ForFile(filepath.Join(rootPath, re.Filename))
