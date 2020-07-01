@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/danbrakeley/frog"
-	"github.com/danbrakeley/sfv/internal/sfv"
+	"github.com/danbrakeley/sfv"
 )
 
 func main() {
