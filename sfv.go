@@ -22,6 +22,8 @@ type FileEntry struct {
 	CRC32    []byte
 }
 
+// VerifyResults holds the results of calling Verify on a given sfv.File object.
+// This object is built to be easy to parse when marshalled to JSON.
 type VerifyResults struct {
 	SFVFile string         `json:"sfv"`
 	Files   []ResultsEntry `json:"files"`
@@ -35,6 +37,7 @@ type ResultsEntry struct {
 	Err           string `json:"error,omitempty"`
 }
 
+// CreateFromFile parses the given file into an sfv.File object.
 func CreateFromFile(filename string) (File, error) {
 	b, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -78,6 +81,7 @@ func CreateFromFile(filename string) (File, error) {
 	return sf, nil
 }
 
+// Verify will open each file, compute the checksum, then add the results to the returned VerifyResults object.
 func (sf File) Verify(fnProgress func(curFile string, bytesRead, bytesTotal int64)) VerifyResults {
 	// filenames in the sfv will be relative to the sfv file itself
 	rootPath := filepath.Dir(sf.Filename)
@@ -132,6 +136,7 @@ func (sf File) Verify(fnProgress func(curFile string, bytesRead, bytesTotal int6
 	return results
 }
 
+// GenerateCRC32ForFile is a helper to open a file, compute its checksum, then close the file.
 func GenerateCRC32ForFile(filename string) (uint32, error) {
 	file, err := os.Open(filename)
 	if err != nil {
