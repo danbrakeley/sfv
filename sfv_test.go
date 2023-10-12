@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 )
@@ -35,10 +35,10 @@ func Test_CreateFromFile(t *testing.T) {
 			}
 
 			if *update {
-				ioutil.WriteFile(goldenName, []byte(actual), 0644)
+				os.WriteFile(goldenName, []byte(actual), 0o644)
 			}
 
-			expected, _ := ioutil.ReadFile(goldenName)
+			expected, _ := os.ReadFile(goldenName)
 			if !bytes.Equal([]byte(actual), expected) {
 				t.Fatalf(
 					"golden file %s does not match test output\nexpected:\n%s\nactual:\n%s\n",
@@ -93,17 +93,16 @@ func Test_Verify(t *testing.T) {
 			}
 
 			if *update {
-				ioutil.WriteFile(goldenName, []byte(actual), 0644)
+				os.WriteFile(goldenName, []byte(actual), 0o644)
 			}
 
-			expected, _ := ioutil.ReadFile(goldenName)
+			expected, _ := os.ReadFile(goldenName)
 			if !bytes.Equal([]byte(actual), expected) {
 				t.Fatalf(
 					"golden file %s does not match test output\nexpected:\n%s\nactual:\n%s\n",
 					goldenName, expected, actual,
 				)
 			}
-
 		})
 	}
 }
